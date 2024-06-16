@@ -1,0 +1,69 @@
+name: Jira Issue Creation
+
+on:
+  workflow_dispatch:
+    inputs:
+      TYPE_OF_ISSUE:
+        description: 'Type of Jira issue to be created (Epic, Task, Subtask)'
+        type: choice
+        options:
+          - "Epic"
+          - "Task"
+          - "Subtask"
+        required: true
+      JIRA_BOARD:
+        description: 'Your Jira board key'
+        type: string
+        required: true
+      ISSUE_SUMMARY:
+        description: 'Issue summary'
+        type: string
+        required: true
+      ISSUE_DESCRIPTION:
+        description: 'Issue description'
+        type: string
+        required: true
+      EPIC_KEY:
+        description: 'Jira EPIC id to attach issue'
+        type: string
+        required: false
+      STORY_KEY:
+        type: string
+        description: 'Jira story key to attach sub task'
+        required: false
+
+jobs:
+  create-jira-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'  # Specify the Python version you need
+
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+
+      - name: Run Jira Issue Creation Script
+        env:
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
+          JIRA_PASSWORD: ${{ secrets.JIRA_PASSWORD }}
+          EPIC_KEY_OPTION: ${{ github.event.inputs.EPIC_KEY && format('--epic_key {}', github.event.inputs.EPIC_KEY) || '' }}
+          STORY_KEY_OPTION: ${{ github.event.inputs.STORY_KEY && format('--story_key {}', github.event.inputs.STORY_KEY) || '' }}
+
+        run: |
+          poetry run python3 jira.py --type_of_issue ${{ github.event.inputs.TYPE_OF_ISSUE }} \
+                                  --jira_board ${{ github.event.inputs.JIRA_BOARD }} \
+                                  --summary "${{ github.event.inputs.ISSUE_SUMMARY }}" \
+                                  --description "${{ github.event.inputs.ISSUE_DESCRIPTION }}" \
+                                  $EPIC_KEY_OPTION \
+                                  $STORY_KEY_OPTION
+      - name: Process completed
+        run: | 
+          echo "Script execution completed"
