@@ -54,10 +54,17 @@ jobs:
           JIRA_URL: ${{ secrets.JIRA_URL }}
           JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
           JIRA_PASSWORD: ${{ secrets.JIRA_PASSWORD }}
-          EPIC_KEY_OPTION: ${{ github.event.inputs.EPIC_KEY && format('--epic_key {}', github.event.inputs.EPIC_KEY) || '' }}
-          STORY_KEY_OPTION: ${{ github.event.inputs.STORY_KEY && format('--story_key {}', github.event.inputs.STORY_KEY) || '' }}
 
         run: |
+          |
+          EPIC_KEY_OPTION=""
+          if [ -n "${{ github.event.inputs.EPIC_KEY }}" ]; then
+            EPIC_KEY_OPTION="--epic_key ${{ github.event.inputs.EPIC_KEY }}"
+          fi
+          STORY_KEY_OPTION=""
+          if [ -n "${{ github.event.inputs.STORY_KEY }}" ]; then
+            STORY_KEY_OPTION="--story_key ${{ github.event.inputs.STORY_KEY }}"
+          fi
           poetry run python3 jira.py --type_of_issue ${{ github.event.inputs.TYPE_OF_ISSUE }} \
                                   --jira_board ${{ github.event.inputs.JIRA_BOARD }} \
                                   --summary "${{ github.event.inputs.ISSUE_SUMMARY }}" \
