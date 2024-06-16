@@ -56,7 +56,6 @@ jobs:
           JIRA_PASSWORD: ${{ secrets.JIRA_PASSWORD }}
 
         run: |
-          |
           EPIC_KEY_OPTION=""
           if [ -n "${{ github.event.inputs.EPIC_KEY }}" ]; then
             EPIC_KEY_OPTION="--epic_key ${{ github.event.inputs.EPIC_KEY }}"
